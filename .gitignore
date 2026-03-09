@@ -1,0 +1,5 @@
+data
+replacements/audio/*
+replacements/image/*
+replacements/text/*
+venv
