@@ -75,16 +75,21 @@ def main():
             target_dir = os.path.join(BASE_DATA_DIR, folder)
             repl_dir = os.path.join(REPLACEMENTS_DIR, folder)
             
-            existing_files = [f for f in os.listdir(target_dir) if f.startswith(name)]
-            if existing_files:
-                print(f"  [-] {folder.upper()}: Уже существует, пропускаю.")
-                continue
-
-            repl_files = [f for f in os.listdir(repl_dir) if f.startswith(name)]
+            repl_files = [f for f in os.listdir(repl_dir) if os.path.splitext(f)[0] == name]
+            
             if repl_files:
+                existing_in_data = [f for f in os.listdir(target_dir) if os.path.splitext(f)[0] == name]
+                for f_to_del in existing_in_data:
+                    os.remove(os.path.join(target_dir, f_to_del))
+
                 file_to_copy = repl_files[0]
                 shutil.copy2(os.path.join(repl_dir, file_to_copy), os.path.join(target_dir, file_to_copy))
-                print(f"  [+] {folder.upper()}: Скопировано из replacements.")
+                print(f"  [+] {folder.upper()}: Заменено файлом из replacements.")
+                continue
+
+            existing_in_data = [f for f in os.listdir(target_dir) if os.path.splitext(f)[0] == name]
+            if existing_in_data:
+                print(f"  [-] {folder.upper()}: Уже существует, пропускаю.")
                 continue
 
             if folder == 'text':
@@ -102,7 +107,7 @@ def main():
                     if url:
                         resp = requests.get(url, headers={'User-Agent': USER_AGENT})
                         ext = url.split('.')[-1].lower()
-                        if len(ext) > 4: ext = 'jpg'
+                        
                         with open(os.path.join(target_dir, f"{name}.{ext}"), 'wb') as f_img:
                             f_img.write(resp.content)
                         print(f"  [+] IMAGE: Скачано из Википедии.")
